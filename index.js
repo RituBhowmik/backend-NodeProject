@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const _ = require("lodash");
 const { v4: uuid } = require("uuid");
-const { result } = require("lodash");
+const { result, compact } = require("lodash");
 const { json } = require("express");
 
 const app = express();
@@ -72,50 +72,103 @@ app.post("/writeRecipe/:id", async (req, res) => {
 });
 // To get a single recipe if the ID is known
 
-
-app.post('/writeMeals/:id', (req, res) => {
+app.post("/writeMeals/:id", (req, res) => {
   // extract the recipe data from the request body
   const content = req.body.content;
   const title = req.body.title;
   const subTitle = req.body.subTitle;
-  const imagePath= req.body.imagePath;
+  const imagePath = req.body.imagePath;
   const id = req.params.id;
 
   // validate the input data
-  if (!content || !title || !subTitle || !imagePath|| !id) {
-    return res.status(400).send('Invalid input data');
+  if (!content || !title || !subTitle || !imagePath || !id) {
+    return res.status(400).send("Invalid input data");
   }
 
   // create a connection to the database
-  const db = new sqlite3.Database('./sqlite DB/mealsDB.db', (err) => {
+  const db = new sqlite3.Database("./sqlite DB/mealsDB.db", (err) => {
     if (err) {
       console.error(err.message);
-      return res.status(500).send('Error connecting to database');
+      return res.status(500).send("Error connecting to database");
     }
-    console.log('Connected to the mealsDB database.');
+    console.log("Connected to the mealsDB database.");
 
     // insert the recipe data into the database
-    db.run(`INSERT INTO mealsDB (id, title, subtitle, content, image) VALUES (?, ?, ?, ?, ?)`, [id, title, subTitle, content, imagePath], function(err) {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).send('Error inserting data into database');
+    db.run(
+      `INSERT INTO mealsDB (id, title, subtitle, content, image) VALUES (?, ?, ?, ?, ?)`,
+      [id, title, subTitle, content, imagePath],
+      function (err) {
+        if (err) {
+          console.error(err.message);
+          return res.status(500).send("Error inserting data into database");
+        }
+        console.log(`A new row has been inserted with rowid ${this.id}`);
+        return res.status(201).json({
+          id: id,
+          title: title,
+          subTitle: subTitle,
+          content: content,
+          imagePath: imagePath,
+        });
       }
-      console.log(`A new row has been inserted with rowid ${this.id}`);
-      return res.status(201).json({
-        id: id,
-        title: title,
-        subTitle: subTitle,
-        content: content,
-        imagePath: imagePath,
-      });
-    });
+    );
 
     // close the database connection
     db.close((err) => {
       if (err) {
         console.error(err.message);
       }
-      console.log('Closed the mealsDB database connection.');
+      console.log("Closed the mealsDB database connection.");
+    });
+  });
+});
+app.post("/writeOwnMeals", (req, res) => {
+  // extract the recipe data from the request body
+  const content = req.body.content;
+  const title = req.body.title;
+  const subTitle = req.body.subTitle;
+
+
+
+  // validate the input data
+  if (!content || !title || !subTitle) {
+    return res.status(400).send("Invalid input data");
+  }
+
+  // create a connection to the database
+  const db = new sqlite3.Database("./sqlite DB/ownMealsDB.db", (err) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error connecting to database");
+    }
+    console.log("Connected to the ownMealsDB database.");
+
+    // insert the recipe data into the database
+    db.run(
+      `INSERT INTO ownMealsDB ( title, subtitle, content) VALUES ( ?, ?, ?)`,
+      [ title, subTitle, content],
+      function (err) {
+        if (err) {
+          console.error(err.message);
+          return res.status(500).send("Error inserting data into database");
+        }
+        console.log(`A new row has been inserted with rowid`);
+        return res.status(201).json({
+          
+          title: title,
+          subTitle: subTitle,
+          content: content,
+       
+        });
+      }
+    );
+
+    // close the database connection
+    db.close((err) => {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log("Closed the mealsDB database connection.");
     });
   });
 });
@@ -157,32 +210,32 @@ app.get("/meals/:id", (req, res) => {
   });
 });
 
-app.get('/allMeals', (req, res) => {
+app.get("/allMeals", (req, res) => {
   // create a connection to the database
-  const db = new sqlite3.Database('./sqlite DB/mealsDB.db', (err) => {
+  const db = new sqlite3.Database("./sqlite DB/mealsDB.db", (err) => {
     if (err) {
       console.error(err.message);
-      return res.status(500).send('Error connecting to database');
+      return res.status(500).send("Error connecting to database");
     }
-    console.log('Connected to the mealsDB database.');
+    console.log("Connected to the mealsDB database.");
   });
 
   // execute the SQL query to retrieve all rows from the mealsDB table
-  db.all('SELECT * FROM mealsDB', [], (err, rows) => {
+  db.all("SELECT * FROM mealsDB", [], (err, rows) => {
     if (err) {
       console.error(err.message);
-      return res.status(500).send('Error retrieving meal data');
+      return res.status(500).send("Error retrieving meal data");
     }
 
     // send the retrieved meal data as a JSON response
     res.json(rows);
-    
+
     // close the database connection when done
     db.close((err) => {
       if (err) {
         console.error(err.message);
       }
-      console.log('Closed the database connection.');
+      console.log("Closed the database connection.");
     });
   });
 });
@@ -216,8 +269,6 @@ app.get("/allRecipes", async (req, res) => {
   return res.status(201).json(results);
 });
 
-
-
 app.get("/allOwnRecipes/:id", async (req, res) => {
   const till = req.params.id;
   const results = [];
@@ -249,34 +300,32 @@ app.get("/allOwnRecipes/:id", async (req, res) => {
   return res.status(201).json(results);
 });
 //make a seperate table for generated meals
-app.get("/allOwnMeals/:id", async (req, res) => {
-  const db = new sqlite3.Database('./sqlite DB/mealsDB.db', (err) => {
+app.get("/allOwnMeals", async (req, res) => {
+  const db = new sqlite3.Database("./sqlite DB/ownMealsDB.db", (err) => {
     if (err) {
       console.error(err.message);
-      return res.status(500).send('Error connecting to database');
+      return res.status(500).send("Error connecting to database");
     }
-    console.log('Connected to the mealsDB database.');
+    console.log("Connected to the ownMealsDB database.");
   });
 
-  const till = req.params.id;
-  const results = [];
-
-  const query = 'SELECT * FROM mealsDB WHERE id >= 100 AND id <= ?;';
-  const params = [till];
-  
 
 
-  db.all(query, params, (err, rows) => {
+  db.all("SELECT * FROM ownMealsDB", [], (err, rows) => {
     if (err) {
       console.error(err.message);
       return res.sendStatus(500);
     }
-    
-    rows.forEach(row => {
-      results.push(row);
-    });
+    // send the retrieved meal data as a JSON response
+    res.json(rows);
 
-    return res.status(200).json(results);
+    // close the database connection when done
+    db.close((err) => {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log("Closed the database connection.");
+    });
   });
 });
 
