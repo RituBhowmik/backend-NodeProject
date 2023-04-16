@@ -1,4 +1,0 @@
-{"carbs":"Bread","protein":"Chicken"}
-{"carbs":"Rice","protein":"Eggs"}
-{"carbs":"Boiled potato","protein":"Chicken"}
-{"carbs":"Rice","protein":"Beans"}

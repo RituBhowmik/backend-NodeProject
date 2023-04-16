@@ -77,11 +77,11 @@ app.post("/writeMeals/:id", (req, res) => {
   const content = req.body.content;
   const title = req.body.title;
   const subTitle = req.body.subTitle;
-  const imagePath = req.body.imagePath;
+  const image = req.body.image;
   const id = req.params.id;
 
   // validate the input data
-  if (!content || !title || !subTitle || !imagePath || !id) {
+  if (!content || !title || !subTitle || !image || !id) {
     return res.status(400).send("Invalid input data");
   }
 
@@ -95,8 +95,8 @@ app.post("/writeMeals/:id", (req, res) => {
 
     // insert the recipe data into the database
     db.run(
-      `INSERT INTO mealsDB (id, title, subtitle, content, image) VALUES (?, ?, ?, ?, ?)`,
-      [id, title, subTitle, content, imagePath],
+      `UPDATE mealsDB SET title = ?, subtitle = ?, content = ?, image = ? WHERE id = ?`,
+      [title, subTitle, content, image, id],
       function (err) {
         if (err) {
           console.error(err.message);
@@ -108,7 +108,7 @@ app.post("/writeMeals/:id", (req, res) => {
           title: title,
           subTitle: subTitle,
           content: content,
-          imagePath: imagePath,
+          image: image,
         });
       }
     );
