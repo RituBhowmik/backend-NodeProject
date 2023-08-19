@@ -219,6 +219,34 @@ app.post("/writeOwnMeals", (req, res) => {
   });
 });
 
+//to get all comments
+app.get("/allcomments", async (req, res) => {
+  const db = new sqlite3.Database("./sqlite DB/comments.db", (err) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error connecting to database");
+    }
+    console.log("Connected to the comments database.");
+  });
+
+  db.all("SELECT * FROM comments", [], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.sendStatus(500);
+    }
+    // send the retrieved meal data as a JSON response
+    res.json(rows);
+
+    // close the database connection when done
+    db.close((err) => {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log("Closed the database connection.");
+    });
+  });
+});
+
 //make a seperate table for comments
 app.post("/writeComments", (req, res) => {
 
