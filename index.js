@@ -220,7 +220,7 @@ app.post("/writeOwnMeals", (req, res) => {
 });
 
 //to get all comments
-app.get("/allcomments", async ( res) => {
+app.get("/allcomments", async (req, res) => {
   const db = new sqlite3.Database("./sqlite DB/comments.db", (err) => {
     if (err) {
       console.error(err.message);
@@ -248,7 +248,7 @@ app.get("/allcomments", async ( res) => {
 });
 
 //make a seperate table for comments
-app.post("/writeComments", ( res) => {
+app.post("/writeComments", ( req, res) => {
 
   const User = req.body.User;
   const comment = req.body.comment;
@@ -301,14 +301,14 @@ app.get("/GeneratedRecipe", async (req, res) => {
   const fat = ["Avocado", "Butter", "Olive oil" ];
 
   generatedContent = {
-    title: "Generated Meals",
-    subTitle: "Lets make a nice combination",
+
     carbs: _.sample(carb),
     proteins: _.sample(protein),
     fats: _.sample(fat)
   };
+  
   res.json(generatedContent); 
-        
+ 
       }
     );
 
