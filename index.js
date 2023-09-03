@@ -14,14 +14,12 @@ app.use(express.json());
 app.use(cors());
 const PORT = process.env.PORT || 3000;
 
-
-
 // To get a single recipe if the ID is known
 
- // Pass the recipe data from the request body
- // uses Update, so edits existing meals, use Insert for new ones
+// Pass the recipe data from the request body
+// uses Update, so edits existing meals, use Insert for new ones
 app.post("/writeMeals/:id", (req, res) => {
- 
+
   const content = req.body.content;
   const title = req.body.title;
   const subTitle = req.body.subTitle;
@@ -192,7 +190,7 @@ app.post("/writeOwnMeals", (req, res) => {
     // insert the recipe data into the database
     db.run(
       `INSERT INTO ownMealsDB ( title, subtitle, content) VALUES ( ?, ?, ?)`,
-      [ title, subTitle, content],
+      [title, subTitle, content],
       function (err) {
         if (err) {
           console.error(err.message);
@@ -200,11 +198,11 @@ app.post("/writeOwnMeals", (req, res) => {
         }
         console.log(`A new row has been inserted with rowid`);
         return res.status(201).json({
-          
+
           title: title,
           subTitle: subTitle,
           content: content,
-       
+
         });
       }
     );
@@ -248,15 +246,15 @@ app.get("/allcomments", async (req, res) => {
 });
 
 //make a seperate table for comments
-app.post("/writeComments", ( req, res) => {
+app.post("/writeComments", (req, res) => {
 
   const User = req.body.User;
   const comment = req.body.comment;
   const date = req.body.date;
- 
+
 
   // validate the input data
-  if (!User || !comment || !date ) {
+  if (!User || !comment || !date) {
     return res.status(400).send("Invalid input data");
   }
 
@@ -270,7 +268,7 @@ app.post("/writeComments", ( req, res) => {
 
     // insert the comment data into the database
     db.run(`INSERT INTO comments ( User, comment, date) VALUES ( ?, ?, ?)`,
-      [ User, comment, date],
+      [User, comment, date],
       function (err) {
         if (err) {
           console.error(err.message);
@@ -278,7 +276,7 @@ app.post("/writeComments", ( req, res) => {
         }
         console.log(`A new row has been inserted with rowid `);
         return res.status(201).json({
-   
+
           User: User,
           comment: comment,
           date: date,
@@ -296,22 +294,17 @@ app.post("/writeComments", ( req, res) => {
   });
 });
 app.get("/GeneratedRecipe", async (req, res) => {
-  const carb = ["Rice", "Boiled potato", "Pasta", "Bread", "oats", "Mashed Potatoes", "Fried Rice", "Spagetti"];
+  const carb = ["Rice", "Boiled potato", "Pasta", "Bread", "Oats", "Mashed Potatoes"];
   const protein = ["Chicken", "Eggs", "Beef", "Pork", "Beans", "Linsel", "Peas", "Fish"];
-  const fat = ["Avocado", "Butter", "Olive oil" ];
-
+  const fat = ["Avocado", "Butter", "Olive oil", "Almonds", "Fresh cheese"];
   generatedContent = {
-
     carbs: _.sample(carb),
     proteins: _.sample(protein),
     fats: _.sample(fat)
   };
-  
-  res.json(generatedContent); 
- 
-      }
-    );
-
+  res.json(generatedContent);
+}
+);
 
 app.listen(PORT, () => {
   console.log("Server is running on localhost 3000");
